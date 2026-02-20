@@ -13,6 +13,8 @@ Thanks, Python!
 ### Requirements
 If you intend to use this program, then you need to have [Obsidian](https://obsidian.md/) installed, with the [Colored Text](https://github.com/erincayaz/obsidian-colored-text) plugin that can be found in the Community Plugins tab in Obsidian.
 
+If you want to use this for cards, like I do, I recommend checking out this [video](https://youtu.be/yaqpVGekrro) on Youtube.
+
 You also need to have python installed and you need to install all of the libraries that are listed in the requirements.txt file as well.
 
 ### Usage
