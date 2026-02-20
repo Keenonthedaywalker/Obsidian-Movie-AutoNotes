@@ -1,0 +1,4 @@
+IMDbPY==2022.7.9
+matplotlib==3.10.8
+pandas==3.0.1
+PyYAML==6.0.3
