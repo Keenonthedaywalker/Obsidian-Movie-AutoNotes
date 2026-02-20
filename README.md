@@ -23,7 +23,15 @@ It might take a while to run depending on how many movies you put in the file.
 You will know it's done once you see the histogram appears with all of occurences of directors on it(See note below if you want to remove this).
 
 If you want to retrieve certain details from a movie and not others, you can use the specific functions in the class.
-Other Usage Examples: 
+
+<img width="654" height="528" alt="UsageExample1" src="https://github.com/user-attachments/assets/51ffd39b-4a79-4210-851b-88e2871cb77e" />
+
+<img width="1006" height="667" alt="UsageExample2" src="https://github.com/user-attachments/assets/f7e28a60-83b9-485c-919e-164b33a2e8a0" />
+
+<img width="984" height="489" alt="UsageExample3" src="https://github.com/user-attachments/assets/0c2d49c8-c735-40a7-9572-261505e6d582" />
+
+
+#### Other Usage Examples: 
 
 ```python
 occurences = data_handler.count_occurrences("directors", split_values=True)
@@ -53,10 +61,8 @@ data_handler.save_movies(all_movies)
 occurences = data_handler.count_occurrences("directors", split_values=True)
 print(occurences)
 
-# Display the 10 most frequent occurances in the data
 data_handler.histogram("directors", 10, split_values=True)
 '''
-
 
 ## TODO
  - Add function to check if series or movie
