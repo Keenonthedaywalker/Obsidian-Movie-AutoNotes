@@ -24,11 +24,29 @@ You will know it's done once you see the histogram appears with all of occurence
 
 If you want to retrieve certain details from a movie and not others, you can use the specific functions in the class.
 
+*Text file with list of movies*
+
 <img width="654" height="528" alt="UsageExample1" src="https://github.com/user-attachments/assets/51ffd39b-4a79-4210-851b-88e2871cb77e" />
 
+
+*Terminal with results after running program*
 <img width="984" height="489" alt="UsageExample3" src="https://github.com/user-attachments/assets/0c2d49c8-c735-40a7-9572-261505e6d582" />
 
+
+*Histogram with top 10 most occuring directors*
 <img width="1006" height="667" alt="UsageExample2" src="https://github.com/user-attachments/assets/f7e28a60-83b9-485c-919e-164b33a2e8a0" />
+
+
+*Histogram with top 25 most occuring actors*
+<img width="1000" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/417577ce-761c-4182-aed2-fc96b9f6106a" />
+
+
+*Movie Base file with all movie cards that were created with the program*
+<img width="1910" height="1034" alt="Screenshot 2026-02-20 214241" src="https://github.com/user-attachments/assets/d7d96a4d-89b7-41d7-a378-803fba5a68e6" />
+
+
+*Note of Movie with all of the generated information*
+<img width="1572" height="1039" alt="Screenshot 2026-02-20 214334" src="https://github.com/user-attachments/assets/a6df14ba-392b-45b7-a28d-8daba6bab733" />
 
 
 #### Other Usage Examples: 
