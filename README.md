@@ -71,6 +71,7 @@ data_handler.histogram("directors", 10, split_values=True)
  - Add more graphs
  - Add class or function or both for the creating the movies so that it isn't just in a for loop
  - Fix issue that creates duplicate details of films in csv file when running same movie more than once
+ - CSV File sort alphabetically
 
 ## Team
 
