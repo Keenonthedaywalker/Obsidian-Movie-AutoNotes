@@ -26,9 +26,9 @@ If you want to retrieve certain details from a movie and not others, you can use
 
 <img width="654" height="528" alt="UsageExample1" src="https://github.com/user-attachments/assets/51ffd39b-4a79-4210-851b-88e2871cb77e" />
 
-<img width="1006" height="667" alt="UsageExample2" src="https://github.com/user-attachments/assets/f7e28a60-83b9-485c-919e-164b33a2e8a0" />
-
 <img width="984" height="489" alt="UsageExample3" src="https://github.com/user-attachments/assets/0c2d49c8-c735-40a7-9572-261505e6d582" />
+
+<img width="1006" height="667" alt="UsageExample2" src="https://github.com/user-attachments/assets/f7e28a60-83b9-485c-919e-164b33a2e8a0" />
 
 
 #### Other Usage Examples: 
