@@ -1,3 +1,5 @@
+# coding: utf8
+
 from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -46,7 +48,7 @@ class DataDetails:
 			# The below code basically evaluates Python literals and converts it into whatever it is
 			# For example: literal_eval() succeeds then it returns: ['Action', 'Comedy']
 			return ast.literal_eval(cell_value)
-		# ValueError - Raised if the string isn’t a valid literal, e.g. Horror(not in quotes)
+		# ValueError - Raised if the string isnï¿½t a valid literal, e.g. Horror(not in quotes)
 		# SyntaxError - Raised if the string is malformed, e.g. ['Horror', 'Comedy'(not closed properly with bracket)
 		# TypeError - Raised if the value isn't a string, e.g. None
 		except (ValueError, SyntaxError, TypeError):

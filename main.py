@@ -1,19 +1,28 @@
-from imdb import Cinemagoer
+from imdbinfo import search_title, get_movie, get_trivia, get_filmography, TitleType
 from obsidian_notes import ObsidianNote
 from data_details import DataDetails
 from collections.abc import Iterable
 from pathlib import Path
+import random
+import time
 import re
 
 class MovieInfo:
 
-	def __init__(self, movie_id=None):
-		self.ia = Cinemagoer()
+	def __init__(self):
 		self.movie = None
-		self.all_movies = []
+		self.movie_trivia = []
 
-		if movie_id:
-			self.movie = self.ia.get_movie(movie_id)
+	def load(self, movie_id):
+		time.sleep(random.uniform(3, 8))
+
+		try:
+			self.movie = get_movie(movie_id)
+
+		except Exception as e:
+			print(f"Failed to load {movie_id}: {e}")
+			self.movie = None
+			
 
 	# This fixes any potential names that might have otherwise caused issues with the formatting.
 	# For instance the markdown file for Alien: Covenant wasn't being created, because windows doesn't allow filenames with the colon in. 
@@ -34,10 +43,12 @@ class MovieInfo:
 				if not line:
 					continue
 
-				search_results = self.ia.search_movie(line)
+				search_results = search_title(line, title_type=TitleType.Movies)
+
+				print(search_results.titles[0])
 				
 				if search_results:
-					movie_id = search_results[0].movieID
+					movie_id = search_results.titles[0].imdb_id
 					print("Movie:", line, "| IMDb ID:", movie_id)
 					movie_id_list.append(movie_id)
 		
@@ -47,64 +58,83 @@ class MovieInfo:
 
 	# This function is useful for when you want information on a certain movie, but forgot the specific name of said movie.
 	# It returns the names, ids and dates of all movies and series that are relevant to the input the user gave.
-	def movie_search(self):
-		movie_search = input("Movie: ")
-		return self.ia.search_movie(movie_search)
-
-	# Returns a list of the top rated movies.
-	# Takes one parameter that is either 
-	def display_top_250_movies(self):
-		top_movies = ia.get_top250_movies()
-
-		for i, movie in enumerate(top_movies):
-			print(i, "-", movie['title'], "| IMDb ID:", movie.movieID)
-
-		return top_movies
-
-	# Get the infosets about the movie
-	def get_movie_infoset(self):
-		return self.movie.infoset2keys
+	def movie_get(self):
+		movie = get_movie("0133093")  # or 'tt0133093'
+		print(movie.title, movie.year, movie.rating, movie.plot, movie.cover_url)
 
 	def get_movie_title(self):
-		title = self.movie.get('title')
+		title = self.movie.title
+		print(title)
 		return title
 
 	def get_movie_cover_url(self):
-		movie_cover = self.movie.get('cover url')
+		movie_cover = self.movie.cover_url
+		print(movie_cover)
 		return movie_cover
 
 	def get_movie_plot(self):
-		plot = self.movie.get('plot')
-		return plot[0]
+		plot = self.movie.plot
+		print(plot)
+		return plot
 
 	def get_movie_genres(self):
-		genres = self.movie.get('genres', [])
+		genres = self.movie.genres
+		print(genres)
 		return genres
 
 
 	def get_movie_directors(self):
-		directors = self.movie.get('directors', [])
-		return [person['name'] for person in directors]
+		directors = self.movie.directors
+		the_directors = []
+		for director in directors:
+			the_directors.append(director.name)
+			print(f"  - {director.name} ({director.imdbId})")
+		return the_directors
 
 	def get_movie_writers(self):
-		writers = self.movie.get('writers', [])
-		return [person['name'] for person in writers]
+		writers = self.movie.categories["cast"]
+		the_writers = []
+		for writer in writers:
+			if writer.job == "writer":
+				the_writers.append(writer.name)
+				print(f"  - {writer.name} ({writer.imdbId})")
+		return the_writers
 
 	# For the time being, roles are broken in the cinemagoer library, and aren't being displayed for whatever reason, however cast members are being displayed.
 	def get_cast_with_roles(self):
-		cast = self.movie.get('cast', [])[:6]
-		return [person['name'] for person in cast]
+		"""cast = []
+		movie_id = f"tt{self.movie.imdb_id}"
+		for p in self.movie.categories["cast"][:8]:
+			character = None
+			filmography_results = get_filmography(p.id)
+			if filmography_results:
+				for role, films in filmography_results.items():
+					for film in films:
+						if film.imdbId == movie_id:
+							character = role
+							break
+			if character:
+				cast.append(f"{p.name}")
+			else:
+				cast.append(f"{p.name}")
+		return cast"""
+		return [p.name for p in self.movie.categories["cast"][:8]]
 
 	def get_movie_release_date(self):
-		return self.movie.get('year')
+		release_date = self.movie.release_date
+		print(release_date)
+		return release_date
 
 	def get_movie_trivia(self):
-		self.ia.update(self.movie, info=['trivia'])
-		trivia = self.movie.get('trivia', [])
+		trivia = self.movie_trivia
+		for index, fact in enumerate(trivia[:5]):
+			print("---")
+			print(f"Interest Score: {fact['interestScore']}")
+			print(f"Fact #{index}: {fact['body'][:200]}...")
+			print("---")
 		return trivia
 
 	def get_movie_taglines(self):
-		self.ia.update(self.movie, info=['taglines'])
 		taglines = self.movie.get('taglines', [])
 		return taglines
 
@@ -143,6 +173,19 @@ class MovieInfo:
 
 		note.set_properties(
 			moviePoster=movie_cover,
+			directors=movie_directors,
+			stars=movie_stars,
+			dateReleased=movie_release_date,
+			dateWatched=None,
+			myScore=None,
+			personalThoughts="Testing",
+			favQuote="Wow, what a great quote!",
+			favScene=None,
+			trivia=None
+		)
+
+		"""note.set_properties(
+			moviePoster=movie_cover,
 			taglines=movie_taglines,
 			genres=movie_genres,
 			directors=movie_directors,
@@ -154,8 +197,8 @@ class MovieInfo:
 			personalThoughts="Testing",
 			favQuote="Wow, what a great quote!",
 			favScene=None,
-			trivia=movie_trivia
-		)
+			trivia=None
+		)"""
 
 		# The Body content of the notes
 		note.set_body(f"""
@@ -165,19 +208,19 @@ class MovieInfo:
 ![movie_cover]({movie_cover})
 
 ## Taglines
-{movie_taglines_body}
+
 
 ## Summary
-{movie_plot}
+
 
 ### <span style="color:rgb(112, 48, 160)">Genres</span>
-{movie_genres_body} {movie_genres_tags}
+
 
 ### <span style="color:rgb(6, 152, 72)">Directors:</span>
 {movie_directors_body} {movie_director_tags}
 
 ### <span style="color:rgb(0, 176, 240)">Writers:</span>
-{movie_writers_body} {movie_writer_tags}
+{movie_writers_body} {movie_writers_tags}
 
 ### <span style="color:rgb(255, 192, 0)">Stars: </span>
 {movie_stars_body} \n{movie_stars_tags}
@@ -219,17 +262,16 @@ def names_to_tags(names):
 	return " ".join(cleaned_tags)
 
 # This function is used to retrieve movie details and converts them into a structured dictionary with properly formatted list fields for analysis in the form of a csv file
-def movie_to_dict(movie_id):
-	the_movie = MovieInfo(movie_id)
+def movie_to_dict(the_movie, movie_id):
 
 	genres_str = " | ".join(the_movie.get_movie_genres())
 	directors_str = " | ".join(the_movie.get_movie_directors())
-	writers_str = " | ".join(the_movie.get_movie_writers())
+	#writers_str = " | ".join(the_movie.get_movie_writers())
 	stars_str = " | ".join(the_movie.get_cast_with_roles())
 
 	genres_list = re.split(r'\s*\|\s*', genres_str)
 	directors_list = re.split(r'\s*\|\s*', directors_str)
-	writers_list = re.split(r'\s*\|\s*', writers_str)
+	#writers_list = re.split(r'\s*\|\s*', writers_str)
 	stars_list = re.split(r'\s*\|\s*', stars_str)
 
 	return {
@@ -238,11 +280,14 @@ def movie_to_dict(movie_id):
 		"year": the_movie.get_movie_release_date(),
 		"genres": genres_list,
 		"directors": directors_list,
-		"writers": writers_list,
 		"stars": stars_list
+		#"writers": writers_list
 	}
 
 all_movies = []
+
+#pythonmovie = ia.get_movie('0133093')  # The Matrix
+#print(movie.keys())  # See all available keys
 
 # Class Initializer
 my_movie = MovieInfo()
@@ -260,7 +305,12 @@ print(movie_list)
 # Loop through list of movie ids, find the details of all the id's provided
 for movie_id in movie_list:
 	# This would look like this, MovieInfo("0109151")
-	the_movie = MovieInfo(movie_id)
+	the_movie = MovieInfo()
+	the_movie.load(movie_id)
+
+	# Skip failed movies
+	if the_movie.movie is None:
+		continue
 
 	movie_cover = the_movie.get_movie_cover_url()
 	movie_title = the_movie.get_movie_title()
@@ -282,31 +332,35 @@ for movie_id in movie_list:
 	movie_writer_tags = names_to_tags(movie_writers)
 
 	movie_stars = the_movie.get_cast_with_roles()
-	movie_stars_body = "\n".join(f"- {d}" for d in movie_stars)
-	movie_stars_tags = names_to_tags(movie_stars)
+	movie_stars_body = "\n".join(f"- {s}" for s in movie_stars)
+
+	# Pass only the names (before the " - ") to names_to_tags
+	star_names = [s.split(" - ")[0] for s in movie_stars]
+	movie_stars_tags = names_to_tags(star_names)
 
 	movie_release_date = the_movie.get_movie_release_date()
 
 	movie_trivia = the_movie.get_movie_trivia()
-	movie_trivia_body = "\n".join(f"- {d}" for d in movie_trivia)
-	movie_trivia_tags = names_to_tags(movie_trivia)
+	movie_trivia_body = "\n".join(f"- {d['body']}" for d in movie_trivia[:5])
+	# Remove movie_trivia_tags entirely, or set a placeholder:
+	movie_trivia_tags = ""
 
-
-	movie_to_dict(movie_id)
+	# Temporary Testing to see if this would fix the code
+	#movie_to_dict(movie_id)
 
 	the_movie.create_note_for_movie()
 
-	movie_dict = movie_to_dict(movie_id)
+	movie_dict = movie_to_dict(the_movie, movie_id)
 
 	all_movies.append(movie_dict)
 
 print(all_movies)
 
 data_handler = DataDetails("movies_data.csv")
-data_handler.save_movies(all_movies)
+#data_handler.save_movies(all_movies)
 
-occurences = data_handler.count_occurrences("directors", split_values=True)
-print(occurences)
+#occurences = data_handler.count_occurrences("directors", split_values=True)
+#print(occurences)
 
 # Display the 10 most frequent occurances in the data
-data_handler.histogram("directors", 10, split_values=True)
+#data_handler.histogram("directors", 10, split_values=True)
