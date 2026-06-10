@@ -1,27 +1,30 @@
-from imdbinfo import search_title, get_movie, get_trivia, get_filmography, TitleType
+from imdbinfo import (
+    get_trivia,
+    get_movie as imdb_get_movie,
+    search_title,
+    TitleType
+)
 from obsidian_notes import ObsidianNote
 from data_details import DataDetails
 from collections.abc import Iterable
 from pathlib import Path
-import random
-import time
+import json
+import requests
 import re
+
+CACHE_DIR = Path("D:\\Python IMDB Scraper\\Obsidian-Movie-AutoNotes\\movie_cache")
+CACHE_DIR.mkdir(exist_ok=True)
+
+
+API_KEY = "Your OMDb API Here"
 
 class MovieInfo:
 
 	def __init__(self):
-		self.movie = None
+		self.movie = None		   # OMDb JSON
+		self.imdb_movie = None     # imdbinfo object
 		self.movie_trivia = []
-
-	def load(self, movie_id):
-		time.sleep(random.uniform(3, 8))
-
-		try:
-			self.movie = get_movie(movie_id)
-
-		except Exception as e:
-			print(f"Failed to load {movie_id}: {e}")
-			self.movie = None
+		self.imdb_id = None
 			
 
 	# This fixes any potential names that might have otherwise caused issues with the formatting.
@@ -53,90 +56,187 @@ class MovieInfo:
 					movie_id_list.append(movie_id)
 		
 		return movie_id_list
+	
 
+	def get_movie(self, movie_id):
 
+		movie_id = str(movie_id)
 
-	# This function is useful for when you want information on a certain movie, but forgot the specific name of said movie.
-	# It returns the names, ids and dates of all movies and series that are relevant to the input the user gave.
-	def movie_get(self):
-		movie = get_movie("0133093")  # or 'tt0133093'
-		print(movie.title, movie.year, movie.rating, movie.plot, movie.cover_url)
+		if movie_id.startswith("tt"):
+			tt_id = movie_id
+		else:
+			tt_id = f"tt{movie_id}"
+
+		self.imdb_id = tt_id
+
+		cache_file = CACHE_DIR / f"{movie_id}.json"
+
+		print("Cache path:", cache_file)
+
+		# ----------------------------
+		# OMDb cache
+		# ----------------------------
+		if cache_file.exists():
+
+			print("Loaded from cache:", cache_file)
+
+			with open(cache_file, "r", encoding="utf-8") as f:
+				self.movie = json.load(f)
+
+		else:
+
+			print("Fetching from API:", tt_id)
+
+			response = requests.get(
+				"https://www.omdbapi.com/",
+				params={
+					"apikey": API_KEY,
+					"i": tt_id,
+					"plot": "full"
+				}
+			)
+
+			self.movie = response.json()
+
+			print("Response:", self.movie)
+
+			print("Saving to:", cache_file)
+
+			with open(cache_file, "w", encoding="utf-8") as f:
+				json.dump(self.movie, f, indent=4)
+
+			print("Saved successfully!")
+
+		# ----------------------------
+		# imdbinfo extras
+		# ALWAYS load
+		# ----------------------------
+		try:
+			self.imdb_movie = imdb_get_movie(movie_id)
+			print("Loaded imdbinfo movie")
+
+		except Exception as e:
+			print(f"IMDb movie load failed: {e}")
+			self.imdb_movie = None
+
+		return self.movie
+
 
 	def get_movie_title(self):
-		title = self.movie.title
+		title = self.movie["Title"]
 		print(title)
 		return title
 
 	def get_movie_cover_url(self):
-		movie_cover = self.movie.cover_url
+		movie_cover = self.movie["Poster"]
 		print(movie_cover)
 		return movie_cover
 
 	def get_movie_plot(self):
-		plot = self.movie.plot
+		plot = self.movie["Plot"]
 		print(plot)
 		return plot
 
 	def get_movie_genres(self):
-		genres = self.movie.genres
-		print(genres)
-		return genres
+
+		genres = self.movie.get("Genre", "N/A")
+
+		if genres == "N/A":
+			return []
+
+		genre_list = [g.strip() for g in genres.split(",")]
+
+		print(genre_list)
+
+		return genre_list
 
 
 	def get_movie_directors(self):
-		directors = self.movie.directors
-		the_directors = []
-		for director in directors:
-			the_directors.append(director.name)
-			print(f"  - {director.name} ({director.imdbId})")
+
+		# I use get here because sometimes directors is represented with N/A so using get here will help for checking it on the next line.
+		directors = self.movie.get("Director")
+
+		if not directors or directors == "N/A":
+			return []
+
+		the_directors = [d.strip() for d in directors.split(",")]
+
+		for director in the_directors:
+			print(f" - {director}")
+
 		return the_directors
 
 	def get_movie_writers(self):
-		writers = self.movie.categories["cast"]
-		the_writers = []
-		for writer in writers:
-			if writer.job == "writer":
-				the_writers.append(writer.name)
-				print(f"  - {writer.name} ({writer.imdbId})")
+
+		writers = self.movie.get("Writer", "N/A")
+
+		if writers == "N/A":
+			return []
+
+		the_writers = [w.strip() for w in writers.split(",")]
+
+		for writer in the_writers:
+			print(f" - {writer}")
+
 		return the_writers
 
-	# For the time being, roles are broken in the cinemagoer library, and aren't being displayed for whatever reason, however cast members are being displayed.
 	def get_cast_with_roles(self):
-		"""cast = []
-		movie_id = f"tt{self.movie.imdb_id}"
-		for p in self.movie.categories["cast"][:8]:
-			character = None
-			filmography_results = get_filmography(p.id)
-			if filmography_results:
-				for role, films in filmography_results.items():
-					for film in films:
-						if film.imdbId == movie_id:
-							character = role
-							break
-			if character:
-				cast.append(f"{p.name}")
-			else:
-				cast.append(f"{p.name}")
-		return cast"""
-		return [p.name for p in self.movie.categories["cast"][:8]]
+
+		actors = self.movie.get("Actors", "N/A")
+
+		if actors == "N/A":
+			return []
+
+		cast = []
+
+		for actor in actors.split(",")[:8]:
+			actor = actor.strip()
+			print(f" - {actor}")
+			cast.append(actor)
+
+		return cast
 
 	def get_movie_release_date(self):
-		release_date = self.movie.release_date
+		release_date = self.movie["Year"]
 		print(release_date)
 		return release_date
 
 	def get_movie_trivia(self):
-		trivia = self.movie_trivia
-		for index, fact in enumerate(trivia[:5]):
-			print("---")
-			print(f"Interest Score: {fact['interestScore']}")
-			print(f"Fact #{index}: {fact['body'][:200]}...")
-			print("---")
-		return trivia
+
+		if self.imdb_id is None:
+			print("No IMDb ID")
+			return []
+
+		try:
+			trivia = get_trivia(self.imdb_id)
+
+			print(f"Loaded {len(trivia)} trivia items")
+
+			return trivia
+
+		except Exception as e:
+			print(f"Trivia failed: {e}")
+			return []
 
 	def get_movie_taglines(self):
-		taglines = self.movie.get('taglines', [])
-		return taglines
+
+		if self.imdb_movie is None:
+			return []
+
+		try:
+			taglines = getattr(
+				self.imdb_movie,
+				"taglines",
+				[]
+			)
+
+			print("Taglines:", taglines)
+
+			return taglines
+
+		except Exception as e:
+			print(f"Taglines failed: {e}")
+			return []
 
 	# This function checks for the which method was used to provide movie ids, then returns those ids in list form
 	def all_movie_details(self, source):
@@ -184,22 +284,6 @@ class MovieInfo:
 			trivia=None
 		)
 
-		"""note.set_properties(
-			moviePoster=movie_cover,
-			taglines=movie_taglines,
-			genres=movie_genres,
-			directors=movie_directors,
-			writers=movie_writers,
-			stars=movie_stars,
-			dateReleased=movie_release_date,
-			dateWatched=None,
-			myScore=None,
-			personalThoughts="Testing",
-			favQuote="Wow, what a great quote!",
-			favScene=None,
-			trivia=None
-		)"""
-
 		# The Body content of the notes
 		note.set_body(f"""
 ## {movie_title} ({movie_release_date})
@@ -208,19 +292,19 @@ class MovieInfo:
 ![movie_cover]({movie_cover})
 
 ## Taglines
-
+{movie_taglines_body}
 
 ## Summary
-
+{movie_plot}
 
 ### <span style="color:rgb(112, 48, 160)">Genres</span>
-
+{movie_genres_body} {movie_genres_tags}
 
 ### <span style="color:rgb(6, 152, 72)">Directors:</span>
 {movie_directors_body} {movie_director_tags}
 
 ### <span style="color:rgb(0, 176, 240)">Writers:</span>
-{movie_writers_body} {movie_writers_tags}
+{movie_writers_body} {movie_writer_tags}
 
 ### <span style="color:rgb(255, 192, 0)">Stars: </span>
 {movie_stars_body} \n{movie_stars_tags}
@@ -229,19 +313,19 @@ class MovieInfo:
 {movie_release_date}
 
 ### <span style="color:rgb(2, 242, 182)">Date Watched:</span>
-
+<Fill In Your Own Info Here>
 
 ### <span style="color:rgb(154, 86, 29)">My Score:</span>
-
+<Fill In Your Own Info Here>
 
 ### <span style="color:rgb(112, 48, 160)">Personal Thoughts:</span>
-
+<Fill In Your Own Info Here>
 
 ### <span style="color:rgb(0, 112, 192)">Favourite Quote:</span>
-
+<Fill In Your Own Info Here>
 
 ### <span style="color:rgb(146, 208, 80)">Favourite Scene: </span>
-
+<Fill In Your Own Info Here>
 
 ### <span style="color:rgb(43, 166, 51)">Trivia</span>
 {movie_trivia_body}
@@ -292,21 +376,15 @@ all_movies = []
 # Class Initializer
 my_movie = MovieInfo()
 
-# Here we provide the function with a .txt file with the names of various movies in it. 
-# It then proceeds to search for the information of all of the movies that are listed.
-movie_id_list = my_movie.file_movie_search("movies.txt")
-
-# Search through the provided list for movies of the same name
-# Return movie ids
-movie_list = my_movie.all_movie_details(movie_id_list)
-print(movie_list)
+movie_id_list = my_movie.file_movie_search("D:\\Python IMDB Scraper\\Obsidian-Movie-AutoNotes\\movies.txt")
 
 
 # Loop through list of movie ids, find the details of all the id's provided
-for movie_id in movie_list:
+for movie_id in movie_id_list:
 	# This would look like this, MovieInfo("0109151")
 	the_movie = MovieInfo()
-	the_movie.load(movie_id)
+	movie = the_movie.get_movie(movie_id)
+	movie_title = the_movie.get_movie_title()
 
 	# Skip failed movies
 	if the_movie.movie is None:
@@ -343,7 +421,6 @@ for movie_id in movie_list:
 	movie_trivia = the_movie.get_movie_trivia()
 	movie_trivia_body = "\n".join(f"- {d['body']}" for d in movie_trivia[:5])
 	# Remove movie_trivia_tags entirely, or set a placeholder:
-	movie_trivia_tags = ""
 
 	# Temporary Testing to see if this would fix the code
 	#movie_to_dict(movie_id)
