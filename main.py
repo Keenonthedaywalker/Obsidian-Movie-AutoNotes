@@ -11,6 +11,7 @@ from pathlib import Path
 import json
 import requests
 import re
+import html
 
 CACHE_DIR = Path("D:\\Python IMDB Scraper\\Obsidian-Movie-AutoNotes\\movie_cache")
 CACHE_DIR.mkdir(exist_ok=True)
@@ -254,6 +255,7 @@ class MovieInfo:
 		note.set_properties(
 			moviePoster=movie_cover,
 			directors=movie_directors,
+			writers=movie_writers,
 			stars=movie_stars,
 			dateReleased=movie_release_date,
 			dateWatched=None,
@@ -290,19 +292,19 @@ class MovieInfo:
 {movie_release_date}
 
 ### <span style="color:rgb(2, 242, 182)">Date Watched:</span>
-<Fill In Your Own Info Here>
+Fill In Your Own Info Here
 
 ### <span style="color:rgb(154, 86, 29)">My Score:</span>
-<Fill In Your Own Info Here>
+Fill In Your Own Info Here
 
 ### <span style="color:rgb(112, 48, 160)">Personal Thoughts:</span>
-<Fill In Your Own Info Here>
+Fill In Your Own Info Here
 
 ### <span style="color:rgb(0, 112, 192)">Favourite Quote:</span>
-<Fill In Your Own Info Here>
+Fill In Your Own Info Here
 
 ### <span style="color:rgb(146, 208, 80)">Favourite Scene: </span>
-<Fill In Your Own Info Here>
+Fill In Your Own Info Here
 
 ### <span style="color:rgb(43, 166, 51)">Trivia</span>
 {movie_trivia_body}
@@ -320,19 +322,19 @@ def names_to_tags(names):
 		clean_name = re.sub(r'[^a-zA-Z0-9]', '', name)
 		cleaned_tags.append(f"#{clean_name}")
 
-	return " ".join(cleaned_tags)
+	return " ".join(html.unescape(cleaned_tags))
 
 # This function is used to retrieve movie details and converts them into a structured dictionary with properly formatted list fields for analysis in the form of a csv file
 def movie_to_dict(the_movie, movie_id):
 
 	genres_str = " | ".join(the_movie.get_movie_genres())
 	directors_str = " | ".join(the_movie.get_movie_directors())
-	#writers_str = " | ".join(the_movie.get_movie_writers())
+	writers_str = " | ".join(the_movie.get_movie_writers())
 	stars_str = " | ".join(the_movie.get_cast_with_roles())
 
 	genres_list = re.split(r'\s*\|\s*', genres_str)
 	directors_list = re.split(r'\s*\|\s*', directors_str)
-	#writers_list = re.split(r'\s*\|\s*', writers_str)
+	writers_list = re.split(r'\s*\|\s*', writers_str)
 	stars_list = re.split(r'\s*\|\s*', stars_str)
 
 	return {
@@ -340,9 +342,9 @@ def movie_to_dict(the_movie, movie_id):
 		"title": the_movie.get_movie_title(),
 		"year": the_movie.get_movie_release_date(),
 		"genres": genres_list,
-		"directors": directors_list,
-		"stars": stars_list
-		#"writers": writers_list
+		"directors": html.unescape(directors_list),
+		"stars": html.unescape(stars_list),
+		"writers": writers_list
 	}
 
 all_movies = []
@@ -384,20 +386,16 @@ for movie_id in movie_id_list:
 	movie_writer_tags = names_to_tags(movie_writers)
 
 	movie_stars = the_movie.get_cast_with_roles()
-	movie_stars_body = "\n".join(f"- {s}" for s in movie_stars)
+	movie_stars_body = "\n".join(f"- {html.unescape(s)}" for s in movie_stars)
 
 	# Pass only the names (before the " - ") to names_to_tags
-	star_names = [s.split(" - ")[0] for s in movie_stars]
+	star_names = [html.unescape(s.split(" - ")[0]) for s in movie_stars]
 	movie_stars_tags = names_to_tags(star_names)
 
 	movie_release_date = the_movie.get_movie_release_date()
 
 	movie_trivia = the_movie.get_movie_trivia()
-	movie_trivia_body = "\n".join(f"- {d['body']}" for d in movie_trivia[:5])
-	# Remove movie_trivia_tags entirely, or set a placeholder:
-
-	# Temporary Testing to see if this would fix the code
-	#movie_to_dict(movie_id)
+	movie_trivia_body = "\n".join(f"- {html.unescape(d['body'])}" for d in movie_trivia[:5])
 
 	the_movie.create_note_for_movie()
 
