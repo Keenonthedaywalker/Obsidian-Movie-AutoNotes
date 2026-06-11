@@ -16,7 +16,7 @@ CACHE_DIR = Path("D:\\Python IMDB Scraper\\Obsidian-Movie-AutoNotes\\movie_cache
 CACHE_DIR.mkdir(exist_ok=True)
 
 
-API_KEY = "Your OMDb API Here"
+API_KEY = "2622ff3"
 
 class MovieInfo:
 
@@ -218,26 +218,6 @@ class MovieInfo:
 			print(f"Trivia failed: {e}")
 			return []
 
-	def get_movie_taglines(self):
-
-		if self.imdb_movie is None:
-			return []
-
-		try:
-			taglines = getattr(
-				self.imdb_movie,
-				"taglines",
-				[]
-			)
-
-			print("Taglines:", taglines)
-
-			return taglines
-
-		except Exception as e:
-			print(f"Taglines failed: {e}")
-			return []
-
 	# This function checks for the which method was used to provide movie ids, then returns those ids in list form
 	def all_movie_details(self, source):
 		# Checks if it's a file path
@@ -290,9 +270,6 @@ class MovieInfo:
 
 ### <span style="color:rgb(146, 208, 80)">Movie Poster: </span>
 ![movie_cover]({movie_cover})
-
-## Taglines
-{movie_taglines_body}
 
 ## Summary
 {movie_plot}
@@ -393,9 +370,6 @@ for movie_id in movie_id_list:
 	movie_cover = the_movie.get_movie_cover_url()
 	movie_title = the_movie.get_movie_title()
 	movie_plot = the_movie.get_movie_plot()
-
-	movie_taglines = the_movie.get_movie_taglines()
-	movie_taglines_body = "\n".join(f"- {d}" for d in movie_taglines)
 
 	movie_genres = the_movie.get_movie_genres()
 	movie_genres_body = ", ".join(movie_genres)
