@@ -13,7 +13,7 @@ import requests
 import re
 import html
 
-CACHE_DIR = Path("D:\\Python IMDB Scraper\\Obsidian-Movie-AutoNotes\\movie_cache")
+CACHE_DIR = Path("D:\\Python IMDB Scraper\\Obsidian-Movie-AutoNotes\\JSONDatabase\\movie_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 
@@ -70,14 +70,12 @@ class MovieInfo:
 
 		self.imdb_id = tt_id
 
-		cache_file = CACHE_DIR / f"{movie_id}.json"
+		# Look for an existing cache file
+		existing_files = list(CACHE_DIR.glob(f"{movie_id}-*.json"))
 
-		print("Cache path:", cache_file)
+		if existing_files:
 
-		# ----------------------------
-		# OMDb cache
-		# ----------------------------
-		if cache_file.exists():
+			cache_file = existing_files[0]
 
 			print("Loaded from cache:", cache_file)
 
@@ -99,7 +97,11 @@ class MovieInfo:
 
 			self.movie = response.json()
 
-			print("Response:", self.movie)
+			movie_title = self.safe_filename(
+				self.movie.get("Title", "Unknown")
+			)
+
+			cache_file = CACHE_DIR / f"{movie_id}-{movie_title}.json"
 
 			print("Saving to:", cache_file)
 
@@ -107,18 +109,6 @@ class MovieInfo:
 				json.dump(self.movie, f, indent=4)
 
 			print("Saved successfully!")
-
-		# ----------------------------
-		# imdbinfo extras
-		# ALWAYS load
-		# ----------------------------
-		try:
-			self.imdb_movie = imdb_get_movie(movie_id)
-			print("Loaded imdbinfo movie")
-
-		except Exception as e:
-			print(f"IMDb movie load failed: {e}")
-			self.imdb_movie = None
 
 		return self.movie
 
