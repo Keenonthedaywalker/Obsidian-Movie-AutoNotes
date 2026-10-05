@@ -135,7 +135,8 @@ class MovieInfo:
 		return trivia
 
 	def get_movie_taglines(self):
-		taglines = self.movie.get('taglines', [])
+		# getattr with a default works whether or not the field exists
+		taglines = getattr(self.movie, 'taglines', None) or []
 		return taglines
 
 	# This function checks for the which method was used to provide movie ids, then returns those ids in list form
@@ -174,6 +175,7 @@ class MovieInfo:
 		note.set_properties(
 			moviePoster=movie_cover,
 			directors=movie_directors,
+			writers=movie_writers,
 			stars=movie_stars,
 			dateReleased=movie_release_date,
 			dateWatched=None,
@@ -208,19 +210,19 @@ class MovieInfo:
 ![movie_cover]({movie_cover})
 
 ## Taglines
-
+{movie_taglines_body}
 
 ## Summary
-
+{movie_plot}
 
 ### <span style="color:rgb(112, 48, 160)">Genres</span>
-
+{movie_genres_body} {movie_genres_tags}
 
 ### <span style="color:rgb(6, 152, 72)">Directors:</span>
 {movie_directors_body} {movie_director_tags}
 
 ### <span style="color:rgb(0, 176, 240)">Writers:</span>
-{movie_writers_body} {movie_writers_tags}
+{movie_writers_body} {movie_writer_tags}
 
 ### <span style="color:rgb(255, 192, 0)">Stars: </span>
 {movie_stars_body} \n{movie_stars_tags}
