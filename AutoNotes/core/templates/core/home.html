@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>My Project</title></head>
+<body>
+    <h1>Hello, {{ user.username }}</h1>
+    <p>{{ result }}</p>
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Log out</button>
+    </form>
+</body>
+</html>
