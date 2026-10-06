@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}My AutoNotes Movie Library{% endblock %}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: #f8f8f8;
+            color: #222;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #032541;
+            padding: 0 40px;
+            height: 64px;
+        }
+        .navbar-left { display: flex; align-items: center; gap: 32px; }
+        .brand {
+            color: #01e458;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 24px; }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 4px 0;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-links a:hover,
+        .nav-links a.active { border-bottom-color: #01e44d; }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .logout-btn:hover { background: #fff; color: #032541; }
+
+        /* Page content */
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+        /* Hero banner */
+        .hero {
+            background: linear-gradient(to right, #032541, #01e460);
+            color: #fff;
+            padding: 60px 40px;
+            border-radius: 8px;
+        }
+        .hero h1 { margin: 0 0 10px; font-size: 2.4rem; }
+        .hero p { margin: 0; font-size: 1.2rem; opacity: 0.9; }
+
+        .cards { margin-top: 30px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            flex: 1 1 280px;
+        }
+        .card h3 { margin-top: 0; }
+        .btn {
+            display: inline-block;
+            background: #01e427;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn:hover { background: #11c401; }
+        #add-movie-card {
+            width: 20%;
+            height: 200px;
+        }
+        #add-movie {
+            font-size: 50px;
+            padding-top: 30%;
+            padding-left: 40%;
+        }
+        div#add-movie-card:hover {
+            background-color: #0000001a;
+        }
+        #search-form { margin: 20px 0; display: flex; gap: 10px; }
+        #search-form[hidden] { display: none; }
+        #search-form input {
+            flex: 1; max-width: 500px;
+            padding: 10px 14px;
+            border: 1px solid #ccc; border-radius: 20px;
+            font-size: 1rem;
+        }
+        .btn { border: none; cursor: pointer; }
+        .results { list-style: none; padding: 0; }
+        .results li { background: #fff; padding: 14px 18px; margin-bottom: 8px; border-radius: 8px; }
+        .results a { text-decoration: none; color: #032541; font-weight: 600; }
+        .movie-layout { display: flex; gap: 30px; flex-wrap: wrap; }
+        .movie-layout img { width: 260px; border-radius: 8px; }
+        .movie-info { flex: 1 1 400px; }
+        /* Edit form */
+        .edit-form { margin-top: 30px; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .edit-form label { display: block; margin: 16px 0 6px; font-weight: 600; }
+        .edit-form textarea, .edit-form input[type="date"] {
+            width: 100%; max-width: 600px; padding: 10px;
+            border: 1px solid #ccc; border-radius: 8px; font: inherit;
+        }
+        .edit-form .btn { margin-top: 20px; }
+        .btn-danger { background: #d9534f; margin-top: 16px; }
+        .btn-danger:hover { background: #b52b27; }
+
+        /* Star rating (radios in reverse order so hover/selection fills leftwards) */
+        .stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; }
+        .stars input { display: none; }
+        .stars label { font-size: 2.2rem; color: #ccc; cursor: pointer; margin: 0 2px; font-weight: 400; }
+        .stars input:checked ~ label,
+        .stars label:hover,
+        .stars label:hover ~ label { color: #f5b301; }
+
+        /* Library grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+        .movie-tile { text-decoration: none; color: #222; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: block; }
+        .movie-tile img { width: 100%; display: block; }
+        .tile-title { display: block; padding: 8px 10px 2px; font-weight: 600; }
+        .tile-rating { display: block; padding: 0 10px 10px; color: #f5b301; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a class="brand" href="{% url 'home' %}">AutoNotes Movie Library</a>
+            <div class="nav-links">
+                <a href="{% url 'home' %}"
+                   class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+                <a href="{% url 'profile' %}"
+                   class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Log out</button>
+        </form>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

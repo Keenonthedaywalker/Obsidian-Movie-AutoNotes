@@ -20,7 +20,14 @@ from core import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/", include("django.contrib.auth.urls")),  # login, logout, password reset
+    path("accounts/", include("django.contrib.auth.urls")),
     path("signup/", views.signup, name="signup"),
+    path("profile/", views.profile, name="profile"),
     path("", views.home, name="home"),
+    path("search/", views.search, name="search"),
+    path("movie/<str:movie_id>/", views.movie_detail, name="movie_detail"),
+    path("movie/<str:movie_id>/add/", views.add_movie, name="add_movie"),
+    path("library/<int:pk>/", views.movie_edit, name="movie_edit"),
+    path("library/<int:pk>/delete/", views.movie_delete, name="movie_delete"),
+    path("library/<int:pk>/export/", views.movie_export, name="movie_export"),
 ]

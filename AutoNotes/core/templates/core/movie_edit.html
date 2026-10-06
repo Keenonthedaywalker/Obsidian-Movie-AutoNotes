@@ -1,0 +1,52 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ movie.title }} | My Movie Library{% endblock %}
+
+{% block content %}
+    <div class="movie-layout">
+        {% if movie.cover_url %}<img src="{{ movie.cover_url }}" alt="{{ movie.title }} poster">{% endif %}
+
+        <div class="movie-info">
+            <h1>{{ movie.title }}</h1>
+            <p><strong>Released:</strong> {{ movie.release_date }}</p>
+            <p><strong>Genres:</strong> {{ movie.genres|join:", " }}</p>
+            <p><strong>Directors:</strong> {{ movie.directors|join:", " }}</p>
+            <p><strong>Writers:</strong> {{ movie.writers|join:", " }}</p>
+            <p>{{ movie.plot }}</p>
+            <p><strong>Cast:</strong> {{ movie.stars|slice:":8"|join:", " }}</p>
+        </div>
+    </div>
+
+    <form method="post" class="edit-form">
+        {% csrf_token %}
+        <h2>Your review</h2>
+
+        <label>Rating</label>
+        <div class="stars">
+            {% for n in stars %}
+                <input type="radio" id="star{{ n }}" name="rating" value="{{ n }}"
+                       {% if movie.rating == n %}checked{% endif %}>
+                <label for="star{{ n }}" title="{{ n }} star{{ n|pluralize }}">★</label>
+            {% endfor %}
+        </div>
+
+        <label for="{{ form.watched_date.id_for_label }}">Date watched</label>
+        {{ form.watched_date }}
+
+        <label for="{{ form.opinion.id_for_label }}">My opinion</label>
+        {{ form.opinion }}
+
+        <label for="{{ form.favourite_quotes.id_for_label }}">Favourite quotes</label>
+        {{ form.favourite_quotes }}
+
+        <button type="submit" class="btn">Save</button>
+        <a class="btn" href="{% url 'movie_export' movie.pk %}">Export Obsidian note</a>
+        <a class="btn" href="{% url 'profile' %}">Back to profile</a>
+    </form>
+
+    <form method="post" action="{% url 'movie_delete' movie.pk %}"
+          onsubmit="return confirm('Remove this movie from your list?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Remove from my list</button>
+    </form>
+{% endblock %}

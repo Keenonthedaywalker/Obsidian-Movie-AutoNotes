@@ -1,6 +1,6 @@
 from imdbinfo import search_title, get_movie, get_trivia, get_filmography, TitleType
-from obsidian_notes import ObsidianNote
-from data_details import DataDetails
+from .obsidian_notes import ObsidianNote
+from .data_details import DataDetails
 from collections.abc import Iterable
 from pathlib import Path
 import random
@@ -163,21 +163,21 @@ class MovieInfo:
 
 
 
-	def create_note_for_movie(self):
+	def create_note_for_movie(self, cover, title, plot, taglines_body, genres_body, genres_tags, directors, directors_body, director_tags, writers, writers_body, writer_tags, stars, stars_body, stars_tags, release_date, trivia_body):
 		note = ObsidianNote(
 			# The Path to your Obsidian Vault where you want to create notes
 			# Example: vault_path=r"D:\\Obsidian Vaults\\Movies"
 			vault_path=r"",
 			# Note name
-			movie_name=self.safe_filename(f"{movie_title} ({movie_release_date})")
+			movie_name=self.safe_filename(f"{title} ({release_date})")
 		)
 
 		note.set_properties(
-			moviePoster=movie_cover,
-			directors=movie_directors,
-			writers=movie_writers,
-			stars=movie_stars,
-			dateReleased=movie_release_date,
+			moviePoster=cover,
+			directors=directors,
+			writers=writers,
+			stars=stars,
+			dateReleased=release_date,
 			dateWatched=None,
 			myScore=None,
 			personalThoughts="Testing",
@@ -204,31 +204,31 @@ class MovieInfo:
 
 		# The Body content of the notes
 		note.set_body(f"""
-## {movie_title} ({movie_release_date})
+## {title} ({release_date})
 
 ### <span style="color:rgb(146, 208, 80)">Movie Poster: </span>
-![movie_cover]({movie_cover})
+![movie_cover]({cover})
 
 ## Taglines
-{movie_taglines_body}
+{taglines_body}
 
 ## Summary
-{movie_plot}
+{plot}
 
 ### <span style="color:rgb(112, 48, 160)">Genres</span>
-{movie_genres_body} {movie_genres_tags}
+{genres_body} {genres_tags}
 
 ### <span style="color:rgb(6, 152, 72)">Directors:</span>
-{movie_directors_body} {movie_director_tags}
+{directors_body} {director_tags}
 
 ### <span style="color:rgb(0, 176, 240)">Writers:</span>
-{movie_writers_body} {movie_writer_tags}
+{writers_body} {writer_tags}
 
 ### <span style="color:rgb(255, 192, 0)">Stars: </span>
-{movie_stars_body} \n{movie_stars_tags}
+{stars_body} \n{stars_tags}
 
 ### <span style="color:rgb(200, 91, 251)">Date Released: </span>
-{movie_release_date}
+{release_date}
 
 ### <span style="color:rgb(2, 242, 182)">Date Watched:</span>
 
@@ -246,7 +246,7 @@ class MovieInfo:
 
 
 ### <span style="color:rgb(43, 166, 51)">Trivia</span>
-{movie_trivia_body}
+{trivia_body}
 
 """)
 
@@ -303,66 +303,78 @@ movie_id_list = my_movie.file_movie_search("D:\\Obsidian Notes\\Obsidian-Movie-A
 movie_list = my_movie.all_movie_details(movie_id_list)
 print(movie_list)
 
+def get_single_movie_details(movie_id, save_note=False):
+    the_movie = MovieInfo()
+    the_movie.load(movie_id)
 
-# Loop through list of movie ids, find the details of all the id's provided
-for movie_id in movie_list:
-	# This would look like this, MovieInfo("0109151")
-	the_movie = MovieInfo()
-	the_movie.load(movie_id)
+    if the_movie.movie is None:
+        return None
 
-	# Skip failed movies
-	if the_movie.movie is None:
-		continue
+    movie_cover = the_movie.get_movie_cover_url()
+    movie_title = the_movie.get_movie_title()
+    movie_plot = the_movie.get_movie_plot()
+    movie_taglines = the_movie.get_movie_taglines()
+    movie_taglines_body = "\n".join(f"- {d}" for d in movie_taglines)
 
-	movie_cover = the_movie.get_movie_cover_url()
-	movie_title = the_movie.get_movie_title()
-	movie_plot = the_movie.get_movie_plot()
+    movie_genres = the_movie.get_movie_genres()
+    movie_genres_body = ", ".join(movie_genres)
+    movie_genres_tags = names_to_tags(movie_genres)
 
-	movie_taglines = the_movie.get_movie_taglines()
-	movie_taglines_body = "\n".join(f"- {d}" for d in movie_taglines)
+    movie_directors = the_movie.get_movie_directors()
+    movie_directors_body = ", ".join(movie_directors)
+    movie_director_tags = names_to_tags(movie_directors)
+	
+    movie_writers = the_movie.get_movie_writers()
+    movie_writers_body = ", ".join(movie_writers)
+    movie_writer_tags = names_to_tags(movie_writers)
 
-	movie_genres = the_movie.get_movie_genres()
-	movie_genres_body = ", ".join(movie_genres)
-	movie_genres_tags = names_to_tags(movie_genres)
+    movie_stars = the_movie.get_cast_with_roles()
+    movie_stars_body = "\n".join(f"- {s}" for s in movie_stars)
+    star_names = [s.split(" - ")[0] for s in movie_stars]
+    movie_stars_tags = names_to_tags(star_names)
+	
+    trivia = the_movie.get_movie_trivia()
+    trivia_facts = [d["body"] for d in trivia[:5]]
+    movie_trivia_body = "\n".join(f"- {d['body']}" for d in trivia[:5])
 
-	movie_directors = the_movie.get_movie_directors()
-	movie_directors_body = ", ".join(movie_directors)
-	movie_director_tags = names_to_tags(movie_directors)
+    movie_release_date = the_movie.get_movie_release_date()
+	
+    details = {
+        "id": movie_id,
+        "cover": movie_cover,
+        "title": movie_title,
+        "plot": movie_plot,
+        "taglines": movie_taglines,
+        "genres": movie_genres,
+        "directors": movie_directors,
+        "writers": movie_writers,
+        "stars": movie_stars,
+        "release_date": movie_release_date,
+        "trivia": trivia_facts,
+    }
 
-	movie_writers = the_movie.get_movie_writers()
-	movie_writers_body = ", ".join(movie_writers)
-	movie_writer_tags = names_to_tags(movie_writers)
+    if save_note:
+        the_movie.create_note_for_movie(movie_cover, movie_title, movie_plot, movie_taglines_body, movie_genres_body, movie_genres_tags, movie_directors, movie_directors_body, movie_director_tags, movie_writers, movie_writers_body, movie_writer_tags, movie_stars, movie_stars_body, movie_stars_tags, movie_release_date, movie_trivia_body)
 
-	movie_stars = the_movie.get_cast_with_roles()
-	movie_stars_body = "\n".join(f"- {s}" for s in movie_stars)
+    return details
 
-	# Pass only the names (before the " - ") to names_to_tags
-	star_names = [s.split(" - ")[0] for s in movie_stars]
-	movie_stars_tags = names_to_tags(star_names)
+def get_movie_details(movie_ids):
+    all_movies = []
+    for movie_id in movie_ids:
+        details = get_single_movie_details(movie_id)
+        if details:
+            all_movies.append(details)
+    return all_movies
 
-	movie_release_date = the_movie.get_movie_release_date()
+def search_movies_query(query, limit=10):
+    results = search_title(query)
+    return [
+        {"id": t.imdb_id, "title": t.title, "year": t.year}
+        for t in results.titles[:limit]
+    ]
 
-	movie_trivia = the_movie.get_movie_trivia()
-	movie_trivia_body = "\n".join(f"- {d['body']}" for d in movie_trivia[:5])
-	# Remove movie_trivia_tags entirely, or set a placeholder:
-	movie_trivia_tags = ""
 
-	# Temporary Testing to see if this would fix the code
-	#movie_to_dict(movie_id)
-
-	the_movie.create_note_for_movie()
-
-	movie_dict = movie_to_dict(the_movie, movie_id)
-
-	all_movies.append(movie_dict)
-
-print(all_movies)
-
-data_handler = DataDetails("movies_data.csv")
-#data_handler.save_movies(all_movies)
-
-#occurences = data_handler.count_occurrences("directors", split_values=True)
-#print(occurences)
-
-# Display the 10 most frequent occurances in the data
-#data_handler.histogram("directors", 10, split_values=True)
+if __name__ == "__main__":
+    movie_list = ["0109151"]
+    for mid in movie_list:
+        print(get_single_movie_details(mid, save_note=True))

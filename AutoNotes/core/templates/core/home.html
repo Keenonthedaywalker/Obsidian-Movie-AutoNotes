@@ -1,13 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head><title>My Project</title></head>
-<body>
-    <h1>Hello, {{ user.username }}</h1>
-    <p>{{ result }}</p>
+{% extends "core/base.html" %}
 
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-    </form>
-</body>
-</html>
+{% block title %}Home | My Movie Library{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1>Welcome, {{ user.username }}.</h1>
+        <p>Keep track of every movie you've watched.</p>
+    </section>
+
+    <section class="cards">
+        <div class="card">
+            <h3>Your Library</h3>
+            <p>View, add, or remove the movies you've watched.</p>
+            <a class="btn" href="{% url 'profile' %}">Go to my library</a>
+        </div>
+    </section>
+{% endblock %}
