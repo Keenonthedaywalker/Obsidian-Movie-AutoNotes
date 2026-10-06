@@ -296,7 +296,7 @@ my_movie = MovieInfo()
 
 # Here we provide the function with a .txt file with the names of various movies in it. 
 # It then proceeds to search for the information of all of the movies that are listed.
-movie_id_list = my_movie.file_movie_search("movies.txt")
+movie_id_list = my_movie.file_movie_search("D:\\Obsidian Notes\\Obsidian-Movie-AutoNotes\\AutoNotes\\core\\movies.txt")
 
 # Search through the provided list for movies of the same name
 # Return movie ids

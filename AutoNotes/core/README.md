@@ -15,7 +15,9 @@ If you intend to use this program, then you need to have [Obsidian](https://obsi
 
 If you want to use this for cards, like I do, I recommend checking out this [video](https://youtu.be/yaqpVGekrro) on Youtube.
 
-You also need to have python installed and you need to install all of the libraries that are listed in the requirements.txt file as well.
+You also need to have python installed and you need to install all of the libraries that are listed in the requirements.txt file as well. Install from the requirements.txt file like so: python -m pip install -r requirements.txt  
+
+Also, if you run into a 403 error when running main.py, try using this:  pip install --upgrade imdbinfo
 
 ### Usage
 To Use this program, open the movies.txt file, input the movies you want to create notes for into the text file, and then run the main.py file. 
@@ -85,6 +87,7 @@ data_handler.histogram("directors", 10, split_values=True)
 '''
 
 ## TODO
+ - Remember to check usage and license agreements should you make this public 
  - Add function to check if series or movie
  - Add genre search function
  - Improve look of graphs
