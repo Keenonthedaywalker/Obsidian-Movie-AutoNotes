@@ -10,6 +10,7 @@ from .models import UserMovie
 from .forms import UserMovieForm
 from django.http import HttpResponse
 from django.utils.text import slugify
+import json
 # from .your_main_file import some_function
 
 @login_required
@@ -61,6 +62,7 @@ def add_movie(request, movie_id):
             "title": details["title"],
             "cover_url": details["cover"] or "",
             "plot": details["plot"] or "",
+            "taglines": details["taglines"] or [],      # <- new
             "release_date": str(details["release_date"] or ""),
             "genres": details["genres"],
             "directors": details["directors"],
@@ -81,8 +83,9 @@ def movie_edit(request, pk):
             return redirect("movie_edit", pk=entry.pk)
     else:
         form = UserMovieForm(instance=entry)
+    # The order is 10 down to 1 because the CSS reverses the row, which makes the stars appear as 1 to 10 left to right and fills leftwards on hover.
     return render(request, "core/movie_edit.html", {
-        "movie": entry, "form": form, "stars": [5, 4, 3, 2, 1],
+    "movie": entry, "form": form, "stars": range(10, 0, -1),
     })
 
 @login_required
@@ -92,44 +95,69 @@ def movie_delete(request, pk):
     entry.delete()
     return redirect("profile")
 
+def _yaml(value):
+    # A JSON string is also a valid YAML double-quoted string, so quotes,
+    # colons and line breaks in the user's text can't break the frontmatter.
+    return json.dumps(value or "", ensure_ascii=False)
+
 @login_required
 def movie_export(request, pk):
     m = get_object_or_404(UserMovie, pk=pk, user=request.user)
 
     quotes = [q.strip() for q in m.favourite_quotes.splitlines() if q.strip()]
-    tags = [slugify(g) for g in m.genres]
-    title = m.title.replace('"', '\\"')
+    rating = m.rating or 0
+    score = f"{'★' * rating}{'☆' * (10 - rating)} | {rating}/10"
+    watched = m.watched_date.isoformat() if m.watched_date else ""
 
     lines = [
         "---",
-        f'title: "{title}"',
-        f"released: {m.release_date}",
-        f"rating: {m.rating or ''}",
-        f"watched: {m.watched_date or ''}",
-        f"tags: [{', '.join(tags)}]",
+        f"moviePoster: {_yaml(m.cover_url)}",
+        f"movieTaglines: {_yaml(' | '.join(m.taglines))}",
+        f"directors: {_yaml(', '.join(m.directors))}",
+        f"writers: {_yaml(', '.join(m.writers))}",
+        "stars:",
+        *[f"  - {_yaml(s)}" for s in m.stars],
+        f"dateReleased: {_yaml(m.release_date)}",
+        f"dateWatched: {watched}",
+        f"myScore: {_yaml(score)}",
+        f"personalThoughts: {_yaml(m.opinion)}",
+        f"favQuote: {_yaml(' / '.join(quotes))}",
+        f"favScene: {_yaml(m.favourite_scene_url)}",
         "---",
         "",
-    ]
-    if m.cover_url:
-        lines += [f"![poster]({m.cover_url})", ""]
-    lines += [
-        f"# {m.title}",
+        '### <span style="color:rgb(146, 208, 80)">Movie Poster: </span>',
+        f"![]({m.cover_url})" if m.cover_url else "",
         "",
-        f"**Genres:** {', '.join(m.genres)}",
-        f"**Directors:** {', '.join(m.directors)}",
-        f"**Writers:** {', '.join(m.writers)}",
+        '### <span style="color:rgb(211, 197, 126)">Taglines:</span>',
+        *[f"- {t}" for t in m.taglines],
         "",
-        "## Plot",
-        m.plot,
+        '### <span style="color:rgb(6, 152, 72)">Directors:</span>',
+        ", ".join(m.directors),
         "",
-        "## Cast",
-        *[f"- {s}" for s in m.stars],
+        '### <span style="color:rgb(0, 176, 240)">Writers:</span>',
+        ", ".join(m.writers),
         "",
-        "## My Opinion",
-        m.opinion or "_No opinion yet._",
+        '### <span style="color:rgb(255, 192, 0)">Stars: </span>',
+        *[f"  - {s}" for s in m.stars],
         "",
-        "## Favourite Quotes",
-        *([f"> {q}" for q in quotes] or ["_None yet._"]),
+        '### <span style="color:rgb(200, 91, 251)">Date Released: </span>',
+        m.release_date,
+        "",
+        '### <span style="color:rgb(2, 242, 182)">Date Watched:</span>',
+        watched,
+        "",
+        '### <span style="color:rgb(154, 86, 29)">My Score:</span>',
+        score,
+        "",
+        '### <span style="color:rgb(112, 48, 160)">Personal Thoughts:</span>',
+        m.opinion,
+        "",
+        '### <span style="color:rgb(0, 112, 192)">Favourite Quote:</span>',
+        *[f'*"{q}"*' for q in quotes],
+        "",
+        '### <span style="color:rgb(146, 208, 80)">Favourite Scene: </span>',
+        f"![]({m.favourite_scene_url})" if m.favourite_scene_url else "",
+        "",
     ]
 
     response = HttpResponse("\n".join(lines), content_type="text/markdown; charset=utf-8")

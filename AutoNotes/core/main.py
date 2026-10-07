@@ -45,7 +45,7 @@ class MovieInfo:
 
 				search_results = search_title(line, title_type=TitleType.Movies)
 
-				print(search_results.titles[0])
+				#print(search_results.titles[0])
 				
 				if search_results:
 					movie_id = search_results.titles[0].imdb_id
@@ -300,8 +300,8 @@ movie_id_list = my_movie.file_movie_search("D:\\Obsidian Notes\\Obsidian-Movie-A
 
 # Search through the provided list for movies of the same name
 # Return movie ids
-movie_list = my_movie.all_movie_details(movie_id_list)
-print(movie_list)
+#movie_list = my_movie.all_movie_details(movie_id_list)
+#print(movie_list)
 
 def get_single_movie_details(movie_id, save_note=False):
     the_movie = MovieInfo()

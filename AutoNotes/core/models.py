@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class UserMovie(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="movies")
@@ -14,12 +15,14 @@ class UserMovie(models.Model):
     directors = models.JSONField(default=list, blank=True)
     writers = models.JSONField(default=list, blank=True)
     stars = models.JSONField(default=list, blank=True)
+    taglines = models.JSONField(default=list, blank=True)
 
     # The user's own fields
-    rating = models.PositiveSmallIntegerField(null=True, blank=True)   # 1-5
+    rating = models.PositiveSmallIntegerField(null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(10)],)
     watched_date = models.DateField(null=True, blank=True)
     opinion = models.TextField(blank=True)
     favourite_quotes = models.TextField(blank=True)
+    favourite_scene_url = models.URLField(max_length=500, blank=True)
 
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -29,3 +32,5 @@ class UserMovie(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.user})"
+    
+    

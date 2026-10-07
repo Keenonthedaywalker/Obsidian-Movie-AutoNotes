@@ -30,7 +30,7 @@
             <a class="movie-tile" href="{% url 'movie_edit' m.pk %}">
                 {% if m.cover_url %}<img src="{{ m.cover_url }}" alt="{{ m.title }}">{% endif %}
                 <span class="tile-title">{{ m.title }}</span>
-                {% if m.rating %}<span class="tile-rating">{{ m.rating }} ★</span>{% endif %}
+                {% if m.rating %}<span class="tile-rating">{{ m.rating }}/10 ★</span>{% endif %}
             </a>
         {% empty %}
             <p>Your library is empty. Click the + card above to add your first movie.</p>

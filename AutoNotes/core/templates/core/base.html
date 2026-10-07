@@ -124,7 +124,7 @@
         /* Star rating (radios in reverse order so hover/selection fills leftwards) */
         .stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; }
         .stars input { display: none; }
-        .stars label { font-size: 2.2rem; color: #ccc; cursor: pointer; margin: 0 2px; font-weight: 400; }
+        .stars label { font-size: 1.8rem; color: #ccc; cursor: pointer; margin: 0 1px; font-weight: 400; }
         .stars input:checked ~ label,
         .stars label:hover,
         .stars label:hover ~ label { color: #f5b301; }
@@ -135,6 +135,13 @@
         .movie-tile img { width: 100%; display: block; }
         .tile-title { display: block; padding: 8px 10px 2px; font-weight: 600; }
         .tile-rating { display: block; padding: 0 10px 10px; color: #f5b301; font-weight: 600; }
+
+        .edit-form input[type="url"] {
+            width: 100%; max-width: 600px; padding: 10px;
+            border: 1px solid #ccc; border-radius: 8px; font: inherit;
+        }
+        .favourite-scene { margin-top: 30px; }
+        .favourite-scene img { max-width: 100%; max-height: 500px; border-radius: 8px; }
     </style>
 </head>
 <body>

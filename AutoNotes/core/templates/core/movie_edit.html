@@ -8,6 +8,9 @@
 
         <div class="movie-info">
             <h1>{{ movie.title }}</h1>
+            {% if movie.taglines %}
+                <p><em>{{ movie.taglines|join:" | " }}</em></p>
+            {% endif %}
             <p><strong>Released:</strong> {{ movie.release_date }}</p>
             <p><strong>Genres:</strong> {{ movie.genres|join:", " }}</p>
             <p><strong>Directors:</strong> {{ movie.directors|join:", " }}</p>
@@ -39,10 +42,21 @@
         <label for="{{ form.favourite_quotes.id_for_label }}">Favourite quotes</label>
         {{ form.favourite_quotes }}
 
+        <label for="{{ form.favourite_scene_url.id_for_label }}">Favourite scene (image link)</label>
+        {{ form.favourite_scene_url }}
+        {{ form.favourite_scene_url.errors }}
+
         <button type="submit" class="btn">Save</button>
         <a class="btn" href="{% url 'movie_export' movie.pk %}">Export Obsidian note</a>
         <a class="btn" href="{% url 'profile' %}">Back to profile</a>
     </form>
+
+    {% if movie.favourite_scene_url %}
+    <section class="favourite-scene">
+        <h2>Favourite Scene</h2>
+        <img src="{{ movie.favourite_scene_url }}" alt="Favourite scene from {{ movie.title }}">
+    </section>
+    {% endif %}
 
     <form method="post" action="{% url 'movie_delete' movie.pk %}"
           onsubmit="return confirm('Remove this movie from your list?');">
