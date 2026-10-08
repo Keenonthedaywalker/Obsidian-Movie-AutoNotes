@@ -87,7 +87,6 @@ data_handler.histogram("directors", 10, split_values=True)
 '''
 
 ## TODO
- - Remember to check usage and license agreements should you make this public 
  - Add function to check if series or movie
  - Add genre search function
  - Improve look of graphs
