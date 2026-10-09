@@ -296,12 +296,14 @@ my_movie = MovieInfo()
 
 # Here we provide the function with a .txt file with the names of various movies in it. 
 # It then proceeds to search for the information of all of the movies that are listed.
-movie_id_list = my_movie.file_movie_search("D:\\Obsidian Notes\\Obsidian-Movie-AutoNotes\\AutoNotes\\core\\movies.txt")
+#movie_id_list = my_movie.file_movie_search("D:\\Obsidian Notes\\Obsidian-Movie-AutoNotes\\AutoNotes\\core\\movies.txt")
 
 # Search through the provided list for movies of the same name
 # Return movie ids
 #movie_list = my_movie.all_movie_details(movie_id_list)
 #print(movie_list)
+
+details = {}
 
 def get_single_movie_details(movie_id, save_note=False):
     the_movie = MovieInfo()
@@ -356,6 +358,8 @@ def get_single_movie_details(movie_id, save_note=False):
     if save_note:
         the_movie.create_note_for_movie(movie_cover, movie_title, movie_plot, movie_taglines_body, movie_genres_body, movie_genres_tags, movie_directors, movie_directors_body, movie_director_tags, movie_writers, movie_writers_body, movie_writer_tags, movie_stars, movie_stars_body, movie_stars_tags, movie_release_date, movie_trivia_body)
 
+    print(details)
+
     return details
 
 def get_movie_details(movie_ids):
@@ -372,7 +376,6 @@ def search_movies_query(query, limit=10):
         {"id": t.imdb_id, "title": t.title, "year": t.year}
         for t in results.titles[:limit]
     ]
-
 
 if __name__ == "__main__":
     movie_list = ["0109151"]

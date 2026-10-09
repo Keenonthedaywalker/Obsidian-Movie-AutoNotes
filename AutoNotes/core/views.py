@@ -11,6 +11,8 @@ from .forms import UserMovieForm
 from django.http import HttpResponse
 from django.utils.text import slugify
 import json
+from collections import Counter
+from django.db.models import Avg
 # from .your_main_file import some_function
 
 @login_required
@@ -29,9 +31,20 @@ def signup(request):
     return render(request, "registration/signup.html", {"form": form})
 
 @login_required
+def stats(request):
+    return render(request, "core/stats.html")
+
+@login_required
 def profile(request):
     movies = UserMovie.objects.filter(user=request.user)
-    return render(request, "core/profile.html", {"movies": movies})
+    stats = {
+        "total": movies.count(),
+        "average_rating": movies.aggregate(avg=Avg("rating"))["avg"],
+        "directors": count_field(movies, "directors"),
+        "genres": count_field(movies, "genres"),
+        "stars": count_field(movies, "stars", clean=lambda s: s.split(" - ")[0]),
+    }
+    return render(request, "core/profile.html", {"movies": movies, "stats": stats})
 
 @login_required
 def search(request):
@@ -163,3 +176,13 @@ def movie_export(request, pk):
     response = HttpResponse("\n".join(lines), content_type="text/markdown; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="{slugify(m.title) or "movie"}.md"'
     return response
+
+
+def count_field(movies, field, top=10, min_count=1, clean=None):
+    counter = Counter()
+    for m in movies:
+        values = getattr(m, field) or []
+        if clean:
+            values = [clean(v) for v in values]
+        counter.update(set(values))   # set(): a name repeated within one movie counts once
+    return [(name, n) for name, n in counter.most_common(top) if n >= min_count]

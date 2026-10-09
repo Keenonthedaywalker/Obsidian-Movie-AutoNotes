@@ -37,6 +37,43 @@
         {% endfor %}
     </div>
 
-    <h2>My Stats</h2>
+    <h2>Quick Stats</h2>
+    {% if stats.total %}
+        <p>
+            Movies in library: <strong>{{ stats.total }}</strong>
+            {% if stats.average_rating %}
+                &middot; Average rating: <strong>{{ stats.average_rating|floatformat:1 }}/10</strong>
+            {% endif %}
+        </p>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Top Directors</h3>
+                <ol>
+                    {% for name, count in stats.directors %}
+                        <li>{{ name }} <span class="count">({{ count }})</span></li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Top Genres</h3>
+                <ol>
+                    {% for name, count in stats.genres %}
+                        <li>{{ name }} <span class="count">({{ count }})</span></li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Most Seen Actors</h3>
+                <ol>
+                    {% for name, count in stats.stars %}
+                        <li>{{ name }} <span class="count">({{ count }})</span></li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    {% else %}
+        <p>Add some movies to see your stats.</p>
+    {% endif %}
 
 {% endblock %}

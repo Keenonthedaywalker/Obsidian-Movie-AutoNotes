@@ -5,6 +5,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import ast
 
+class NewDataDetails:
+	def __init__(self):
+		pass
+
+	def count_occurences(occuringItem):
+		"""
+		count_occurances counts the amount of times an given item(i.e. director name or writer name or specific genre of movie) occurs in the user's movie library.
+
+		This function uses only one parameter and that is 'occuringItem' which is the name of the item that the user want's to count. If the user wants to see the amount of times
+		a director reoccurs in their library then they have to type director and it's the same principle for anything else.
+		"""
+		print()
 
 class DataDetails:
 	def __init__(self, file_path):
