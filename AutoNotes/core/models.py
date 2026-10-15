@@ -25,7 +25,7 @@ class UserMovie(models.Model):
     favourite_scene_url = models.URLField(max_length=500, blank=True)
 
     added_at = models.DateTimeField(auto_now_add=True)
-
+    
     class Meta:
         unique_together = ("user", "imdb_id")   # no duplicates per user
         ordering = ["-added_at"]

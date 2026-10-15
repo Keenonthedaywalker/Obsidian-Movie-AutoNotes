@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.http import Http404
 from .main import search_movies_query, get_movie_details, get_single_movie_details
+from .data_details import NewDataDetails
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from .models import UserMovie
@@ -32,7 +33,12 @@ def signup(request):
 
 @login_required
 def stats(request):
-    return render(request, "core/stats.html")
+    result = NewDataDetails.new_count_occurences("test")
+    scatter_plot_plotly = NewDataDetails.scatter_plot_plotly()
+    scatter_plot = NewDataDetails.scatter_plot()
+    bar_plot = NewDataDetails.bar_plot()
+    time_chart = NewDataDetails.time_chart()
+    return render(request, "core/stats.html", {"result": result, "scatter_plot" : scatter_plot, "bar_plot": bar_plot, "time_chart": time_chart, "scatter_plot_plotly": scatter_plot_plotly})
 
 @login_required
 def profile(request):
@@ -176,7 +182,7 @@ def movie_export(request, pk):
     response = HttpResponse("\n".join(lines), content_type="text/markdown; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="{slugify(m.title) or "movie"}.md"'
     return response
-
+  
 
 def count_field(movies, field, top=10, min_count=1, clean=None):
     counter = Counter()
@@ -186,3 +192,4 @@ def count_field(movies, field, top=10, min_count=1, clean=None):
             values = [clean(v) for v in values]
         counter.update(set(values))   # set(): a name repeated within one movie counts once
     return [(name, n) for name, n in counter.most_common(top) if n >= min_count]
+
