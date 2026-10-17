@@ -7,9 +7,15 @@
     <p>{{ result }}</p>
     <div id="scatter-plot">
     <!-- Insert the HTML returned by scatter_plot() here -->
-     {{ scatter_plot_plotly | safe }}
     </div>
-    <img src="data:image/png;base64,{{ scatter_plot }}" alt="Chart" style="max-width:100%;">
     <img src="data:image/png;base64,{{ bar_plot }}" alt="Chart" style="max-width:100%;">
     <img src="data:image/png;base64,{{ time_chart }}" alt="Chart" style="max-width:100%;">
+    {{ scatter_plot_plotly | safe }}
+    {% if scatter_plot %}
+        <p>
+            <a class="btn" href="{% url 'download_scatter' %}">Download chart</a>
+        </p>
+    {% else %}
+        <p>Rate some movies to see your chart.</p>
+    {% endif %}
 {% endblock %}

@@ -14,6 +14,7 @@ from django.utils.text import slugify
 import json
 from collections import Counter
 from django.db.models import Avg
+import base64
 # from .your_main_file import some_function
 
 @login_required
@@ -33,12 +34,29 @@ def signup(request):
 
 @login_required
 def stats(request):
+    # Only this user's movies, so nobody sees another person's data
+    movies = UserMovie.objects.filter(user=request.user)
     result = NewDataDetails.new_count_occurences("test")
-    scatter_plot_plotly = NewDataDetails.scatter_plot_plotly()
-    scatter_plot = NewDataDetails.scatter_plot()
+    # Build the chart HTML (or None if there is nothing to plot)
+    scatter_plot_plotly = NewDataDetails.scatter_plot_plotly(movies)
+    scatter_plot = NewDataDetails.scatter_plot(movies)
     bar_plot = NewDataDetails.bar_plot()
     time_chart = NewDataDetails.time_chart()
-    return render(request, "core/stats.html", {"result": result, "scatter_plot" : scatter_plot, "bar_plot": bar_plot, "time_chart": time_chart, "scatter_plot_plotly": scatter_plot_plotly})
+    # Hand everything over to the template, where it is shown with {{ text|safe }} or something similar
+    return render(request, "core/stats.html", {"result": result, "bar_plot": bar_plot, "time_chart": time_chart, "scatter_plot_plotly": scatter_plot_plotly, "scatter_plot": scatter_plot})
+
+@login_required
+def download_scatter(request):
+    movies = UserMovie.objects.filter(user=request.user)
+    chart = NewDataDetails.scatter_plot(movies)
+    if chart is None:
+        raise Http404("Nothing to chart yet")
+
+    # Turn the base64 text back into raw PNG bytes
+    response = HttpResponse(base64.b64decode(chart), content_type="image/png")
+    # "attachment" makes the browser download instead of display
+    response["Content-Disposition"] = 'attachment; filename="movie-ratings-chart.png"'
+    return response
 
 @login_required
 def profile(request):
