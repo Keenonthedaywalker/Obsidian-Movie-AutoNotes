@@ -37,7 +37,11 @@
         {{ form.watched_date }}
 
         <label for="{{ form.opinion.id_for_label }}">My opinion</label>
-        {{ form.opinion }}
+        <div class="private-field">
+            {{ form.opinion }}
+            <button type="button" id="toggle-opinion" class="eye-btn"
+                    aria-label="Show or hide my opinion" aria-pressed="false">(–_–)</button>
+        </div>
 
         <label for="{{ form.favourite_quotes.id_for_label }}">Favourite quotes</label>
         {{ form.favourite_quotes }}
@@ -63,4 +67,16 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Remove from my list</button>
     </form>
+
+    <script>
+        const opinion = document.getElementById("id_opinion");   // Django's default id for the field
+        opinion.classList.add("is-hidden");
+        const eye = document.getElementById("toggle-opinion");
+
+        eye.addEventListener("click", function () {
+            const hidden = opinion.classList.toggle("is-hidden");   // true if now blurred
+            eye.setAttribute("aria-pressed", hidden);
+            eye.textContent = hidden ? "(–_–)" : "(o_o)";
+        });
+    </script>
 {% endblock %}
