@@ -36,14 +36,13 @@ def signup(request):
 def stats(request):
     # Only this user's movies, so nobody sees another person's data
     movies = UserMovie.objects.filter(user=request.user)
-    result = NewDataDetails.new_count_occurences("test")
     # Build the chart HTML (or None if there is nothing to plot)
     scatter_plot_plotly = NewDataDetails.scatter_plot_plotly(movies)
     scatter_plot = NewDataDetails.scatter_plot(movies)
     bar_plot = NewDataDetails.bar_plot()
     time_chart = NewDataDetails.time_chart()
     # Hand everything over to the template, where it is shown with {{ text|safe }} or something similar
-    return render(request, "core/stats.html", {"result": result, "bar_plot": bar_plot, "time_chart": time_chart, "scatter_plot_plotly": scatter_plot_plotly, "scatter_plot": scatter_plot})
+    return render(request, "core/stats.html", {"bar_plot": bar_plot, "time_chart": time_chart, "scatter_plot_plotly": scatter_plot_plotly, "scatter_plot": scatter_plot})
 
 @login_required
 def download_scatter(request):

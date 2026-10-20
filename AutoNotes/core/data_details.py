@@ -41,19 +41,6 @@ class NewDataDetails:
 		pass
 
 	@staticmethod
-	def new_count_occurences(occuringItem):
-		"""
-		count_occurances counts the amount of times an given item(i.e. director name or writer name or specific genre of movie) occurs in the user's movie library.
-
-		This function uses only one parameter and that is 'occuringItem' which is the name of the item that the user want's to count. If the user wants to see the amount of times
-		a director reoccurs in their library then they have to type director and it's the same principle for anything else.
-		"""
-		print("Hello this is my new test, you FOOL!")
-		var1 = "test me."
-		occuringItem = var1
-		return occuringItem
-
-	@staticmethod
 	def bar_plot():
 		# Data set
 		height = [3, 12, 5, 18, 45]
